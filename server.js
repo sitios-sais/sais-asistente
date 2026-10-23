@@ -4,8 +4,7 @@ const Groq = require('groq-sdk');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Inicializa Groq (tomará automáticamente la variable de entorno GROQ_API_KEY)
-const groq = new Groq();
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 app.use(express.json());
 app.use(express.static('public'));
@@ -14,30 +13,15 @@ app.post('/api/asistente', async (req, res) => {
     try {
         const mensajeUsuario = req.body.mensaje || "Hola";
 
-        // Llamada a la API de Groq usando un modelo rápido y potente como Llama 3
         const completion = await groq.chat.completions.create({
-            model: "llama3-8b-8192", // O puedes usar "llama-3.3-70b-versatile"
-            messages: [
-                {
-                    role: "system",
-                    content: "Eres un asistente personal útil, amigable y conciso."
-                },
-                {
-                    role: "user",
-                    content: mensajeUsuario
-                }
-            ],
-            temperature: 0.7,
+            messages: [{ role: "user", content: mensajeUsuario }],
+            model: "llama-3.3-70b-versatile",
         });
 
-        const respuestaAsistente = completion.choices[0]?.message?.content || "No pude generar una respuesta.";
-
-        // Devuelve la respuesta al cliente (app o web)
-        res.json({ respuesta: respuestaAsistente });
-        
+        res.json({ respuesta: completion.choices[0]?.message?.content || "Sin respuesta" });
     } catch (error) {
-        console.error("Error al conectar con Groq:", error);
-        res.status(500).json({ respuesta: "Lo siento, tuve un problema procesando tu mensaje con la IA." });
+        console.error("Error con Groq:", error);
+        res.status(500).json({ respuesta: "Error procesando con la IA." });
     }
 });
 
