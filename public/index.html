@@ -106,7 +106,44 @@
     </style>
 </head>
 <body>
+    <!-- Botón para ver el historial de MongoDB -->
+<div style="margin-top: 20px; text-align: center;">
+    <button onclick="cargarHistorial()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
+        Ver Historial de la Base de Datos
+    </button>
+</div>
 
+<!-- Contenedor donde aparecerán los mensajes guardados -->
+<div id="historial-container" style="margin-top: 15px; padding: 10px; background: #f9f9f9; border-radius: 5px; max-width: 600px; margin-left: auto; margin-right: auto; text-align: left;"></div>
+
+<script>
+async function cargarHistorial() {
+    try {
+        const respuesta = await fetch('/api/historial');
+        const datos = await respuesta.json();
+        
+        const contenedor = document.getElementById('historial-container');
+        contenedor.innerHTML = '<h3>Historial guardado:</h3>';
+        
+        if (datos.length === 0) {
+            contenedor.innerHTML += '<p>No hay mensajes guardados aún.</p>';
+            return;
+        }
+
+        datos.forEach(item => {
+            contenedor.innerHTML += `
+                <div style="border-bottom: 1px solid #ddd; margin-bottom: 10px; padding-bottom: 5px;">
+                    <p><strong>Tú:</strong> ${item.usuario}</p>
+                    <p><strong>IA:</strong> ${item.respuesta}</p>
+                    <small style="color: gray;">${new Date(item.fecha).toLocaleString()}</small>
+                </div>
+            `;
+        });
+    } catch (error) {
+        console.error("Error al cargar historial:", error);
+    }
+}
+</script>
     <div class="chat-container">
         <div class="chat-header">🤖 Mi Asistente Personal</div>
         
