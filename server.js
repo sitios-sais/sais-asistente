@@ -4,6 +4,7 @@ const Groq = require('groq-sdk');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Inicializa Groq usando la variable de entorno que ya pusiste en Render
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 app.use(express.json());
@@ -18,10 +19,12 @@ app.post('/api/asistente', async (req, res) => {
             model: "llama-3.3-70b-versatile",
         });
 
-        res.json({ respuesta: completion.choices[0]?.message?.content || "Sin respuesta" });
+        const respuestaIA = completion.choices[0]?.message?.content || "No obtuve respuesta";
+        res.json({ respuesta: respuestaIA });
+
     } catch (error) {
-        console.error("Error con Groq:", error);
-        res.status(500).json({ respuesta: "Error procesando con la IA." });
+        console.error("Error detallado:", error);
+        res.status(500).json({ respuesta: "Hubo un error al procesar con la inteligencia artificial." });
     }
 });
 
