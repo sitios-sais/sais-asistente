@@ -4,7 +4,7 @@ const Groq = require('groq-sdk');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Inicializa Groq usando la variable de entorno que ya pusiste en Render
+// Inicializa Groq usando la variable de entorno configurada en Render
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 app.use(express.json());
