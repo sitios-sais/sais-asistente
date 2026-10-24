@@ -16,7 +16,7 @@ app.post('/api/asistente', async (req, res) => {
 
         const completion = await groq.chat.completions.create({
             messages: [{ role: "user", content: mensajeUsuario }],
-            model: "llama-3.1-8b-instant",
+            model: "llama3-8b-8192",
         });
 
         const respuestaIA = completion.choices[0]?.message?.content || "No obtuve respuesta";
