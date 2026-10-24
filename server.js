@@ -5,14 +5,14 @@ const Groq = require('groq-sdk');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Conexión a MongoDB Atlas usando la variable de entorno
+// Conexión a MongoDB Atlas
 const MONGO_URI = process.env.MONGO_URI;
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log("Conectado a MongoDB Atlas exitosamente"))
     .catch(err => console.error("Error al conectar a MongoDB:", err));
 
-// Esquema para guardar el historial de chat
+// Esquema y modelo para el historial
 const mensajeSchema = new mongoose.Schema({
     usuario: String,
     respuesta: String,
@@ -26,6 +26,7 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 app.use(express.json());
 app.use(express.static('public'));
 
+// Ruta del chat con la IA y guardado automático
 app.post('/api/asistente', async (req, res) => {
     try {
         const mensajeUsuario = req.body.mensaje || "Hola";
@@ -37,7 +38,7 @@ app.post('/api/asistente', async (req, res) => {
 
         const respuestaIA = completion.choices[0]?.message?.content || "No obtuve respuesta";
 
-        // Guardar automáticamente en MongoDB Atlas
+        // Guardar en MongoDB Atlas
         const nuevoRegistro = new Mensaje({ usuario: mensajeUsuario, respuesta: respuestaIA });
         await nuevoRegistro.save();
 
@@ -46,6 +47,17 @@ app.post('/api/asistente', async (req, res) => {
     } catch (error) {
         console.error("Error detallado:", error);
         res.status(500).json({ respuesta: "Hubo un error al procesar con la inteligencia artificial." });
+    }
+});
+
+// NUEVA RUTA: Consultar el historial de mensajes
+app.get('/api/historial', async (req, res) => {
+    try {
+        const historial = await Mensaje.find().sort({ fecha: -1 }).limit(10);
+        res.json(historial);
+    } catch (error) {
+        console.error("Error al obtener historial:", error);
+        res.status(500).json({ error: "No se pudo cargar el historial" });
     }
 });
 
