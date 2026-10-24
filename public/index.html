@@ -5,155 +5,211 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Asistente Personal IA</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: #0b0f19;
+            color: #f1f5f9;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
         }
-
-        .chat-container {
-            width: 100%;
-            max-width: 500px;
-            height: 80vh;
-            background: #1e293b;
-            border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        .main-wrapper {
+            display: flex;
+            width: 90%;
+            max-width: 950px;
+            height: 85vh;
+            background: #111827;
+            border-radius: 16px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.4);
+            overflow: hidden;
+            border: 1px solid #1f2937;
+        }
+        /* Panel del Historial (Lateral) */
+        .history-panel {
+            width: 320px;
+            background: #0f172a;
+            border-right: 1px solid #1f2937;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            padding: 20px;
         }
-
-        .chat-header {
-            background: #3b82f6;
-            padding: 16px;
-            text-align: center;
-            font-size: 1.2rem;
-            font-weight: bold;
+        .history-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #60a5fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-
-        .chat-mensajes {
+        .history-list {
             flex: 1;
-            padding: 16px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
+            padding-right: 4px;
         }
-
-        .mensaje {
-            max-width: 80%;
-            padding: 10px 14px;
+        .history-item {
+            background: #1e293b;
+            padding: 10px 12px;
             border-radius: 8px;
-            font-size: 0.95rem;
-            line-height: 1.4;
+            font-size: 0.85rem;
+            border: 1px solid #334155;
+        }
+        .history-item p {
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+        .history-item small {
+            color: #94a3b8;
+            font-size: 0.75rem;
+        }
+        .btn-cargar {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        .btn-cargar:hover {
+            background: #1d4ed8;
         }
 
+        /* Sección del Chat Principal */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #111827;
+        }
+        .chat-header {
+            background: #1f2937;
+            padding: 18px 24px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-bottom: 1px solid #374151;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-mensajes {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .mensaje {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
         .mensaje.usuario {
             background: #2563eb;
             color: white;
             align-self: flex-end;
+            border-bottom-right-radius: 2px;
         }
-
         .mensaje.asistente {
-            background: #334155;
-            color: #f1f5f9;
+            background: #1f2937;
+            color: #e2e8f0;
             align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            border: 1px solid #374151;
         }
-
         .chat-input-area {
             display: flex;
-            padding: 12px;
-            background: #0f172a;
-            border-top: 1px solid #334155;
+            padding: 16px;
+            background: #1f2937;
+            border-top: 1px solid #374151;
+            gap: 10px;
         }
-
         .chat-input-area input {
             flex: 1;
-            padding: 10px 14px;
-            background: #1e293b;
-            border: 1px solid #475569;
-            border-radius: 6px;
+            padding: 12px 16px;
+            background: #111827;
+            border: 1px solid #374151;
+            border-radius: 8px;
             color: white;
-            font-size: 1rem;
+            font-size: 0.95rem;
             outline: none;
+            transition: border-color 0.2s;
         }
-
         .chat-input-area input:focus {
             border-color: #3b82f6;
         }
-
         .chat-input-area button {
             background: #3b82f6;
             color: white;
             border: none;
-            padding: 0 16px;
-            margin-left: 8px;
-            border-radius: 6px;
-            font-weight: bold;
+            padding: 0 20px;
+            border-radius: 8px;
+            font-weight: 600;
             cursor: pointer;
             transition: background 0.2s;
         }
-
         .chat-input-area button:hover {
             background: #2563eb;
+        }
+
+        /* Diseño adaptable para celulares */
+        @media (max-width: 768px) {
+            .main-wrapper {
+                flex-direction: column;
+                height: 95vh;
+                width: 95%;
+            }
+            .history-panel {
+                width: 100%;
+                max-height: 180px;
+                padding: 12px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Botón para ver el historial de MongoDB -->
-<div style="margin-top: 20px; text-align: center;">
-    <button onclick="cargarHistorial()" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer;">
-        Ver Historial de la Base de Datos
-    </button>
-</div>
 
-<!-- Contenedor donde aparecerán los mensajes guardados -->
-<div id="historial-container" style="margin-top: 15px; padding: 10px; background: #f9f9f9; border-radius: 5px; max-width: 600px; margin-left: auto; margin-right: auto; text-align: left;"></div>
-
-<script>
-async function cargarHistorial() {
-    try {
-        const respuesta = await fetch('/api/historial');
-        const datos = await respuesta.json();
-        
-        const contenedor = document.getElementById('historial-container');
-        contenedor.innerHTML = '<h3>Historial guardado:</h3>';
-        
-        if (datos.length === 0) {
-            contenedor.innerHTML += '<p>No hay mensajes guardados aún.</p>';
-            return;
-        }
-
-        datos.forEach(item => {
-            contenedor.innerHTML += `
-                <div style="border-bottom: 1px solid #ddd; margin-bottom: 10px; padding-bottom: 5px;">
-                    <p><strong>Tú:</strong> ${item.usuario}</p>
-                    <p><strong>IA:</strong> ${item.respuesta}</p>
-                    <small style="color: gray;">${new Date(item.fecha).toLocaleString()}</small>
+    <div class="main-wrapper">
+        <!-- Panel Lateral para Historial -->
+        <div class="history-panel">
+            <div class="history-header">
+                <span>📚 Historial DB</span>
+            </div>
+            <button class="btn-cargar" onclick="cargarHistorial()">Actualizar Historial</button>
+            <div id="historial-container" class="history-list" style="margin-top: 12px;">
+                <div class="history-item">
+                    <p style="color: #94a3b8; text-align: center;">Haz clic en actualizar para ver los registros.</p>
                 </div>
-            `;
-        });
-    } catch (error) {
-        console.error("Error al cargar historial:", error);
-    }
-}
-</script>
-    <div class="chat-container">
-        <div class="chat-header">🤖 Mi Asistente Personal</div>
-        
-        <div id="chatMensajes" class="chat-mensajes">
-            <div class="mensaje asistente">¡Hola! Soy tu asistente. ¿Qué comando o pregunta quieres probar hoy?</div>
+            </div>
         </div>
 
-        <div class="chat-input-area">
-            <input type="text" id="inputMensaje" placeholder="Escribe un mensaje..." onkeypress="verificarEnter(event)">
-            <button onclick="enviarMensaje()">Enviar</button>
+        <!-- Panel Principal del Chat -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <span>🤖</span> Mi Asistente Personal
+            </div>
+            <div id="chatMensajes" class="chat-mensajes">
+                <div class="mensaje asistente">¡Hola! Soy tu asistente conectado a la base de datos. ¿Qué quieres consultar hoy?</div>
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="inputMensaje" placeholder="Escribe un mensaje..." onkeypress="verificarEnter(event)">
+                <button onclick="enviarMensaje()">Enviar</button>
+            </div>
         </div>
     </div>
 
@@ -161,7 +217,6 @@ async function cargarHistorial() {
         async function enviarMensaje() {
             const input = document.getElementById('inputMensaje');
             const texto = input.value.trim();
-
             if (texto === "") return;
 
             agregarMensajeAlChat(texto, 'usuario');
@@ -170,18 +225,44 @@ async function cargarHistorial() {
             try {
                 const respuesta = await fetch('/api/asistente', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ mensaje: texto })
                 });
-
                 const data = await respuesta.json();
                 agregarMensajeAlChat(data.respuesta, 'asistente');
-
+                
+                // Actualiza el historial automáticamente al enviar un mensaje
+                cargarHistorial();
             } catch (error) {
                 console.error("Error al conectar con el servidor:", error);
-                agregarMensajeAlChat("Lo siento, ocurrió un error de conexión con el servidor.", 'asistente');
+                agregarMensajeAlChat("Lo siento, ocurrió un error de conexión.", 'asistente');
+            }
+        }
+
+        async function cargarHistorial() {
+            try {
+                const respuesta = await fetch('/api/historial');
+                const datos = await respuesta.json();
+                
+                const contenedor = document.getElementById('historial-container');
+                contenedor.innerHTML = '';
+                
+                if (datos.length === 0) {
+                    contenedor.innerHTML = '<div class="history-item"><p>No hay mensajes guardados.</p></div>';
+                    return;
+                }
+
+                datos.forEach(item => {
+                    contenedor.innerHTML += `
+                        <div class="history-item">
+                            <p><strong>Tú:</strong> ${item.usuario}</p>
+                            <p style="color: #cbd5e1;"><strong>IA:</strong> ${item.respuesta}</p>
+                            <small>${new Date(item.fecha).toLocaleTimeString()}</small>
+                        </div>
+                    `;
+                });
+            } catch (error) {
+                console.error("Error al cargar historial:", error);
             }
         }
 
@@ -194,13 +275,16 @@ async function cargarHistorial() {
         function agregarMensajeAlChat(texto, remitente) {
             const contenedorMensajes = document.getElementById('chatMensajes');
             const divMensaje = document.createElement('div');
-            
             divMensaje.className = `mensaje ${remitente}`;
             divMensaje.innerText = texto;
-            
             contenedorMensajes.appendChild(divMensaje);
             contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
         }
+
+        // Cargar el historial automáticamente al abrir la página
+        window.onload = () => {
+            cargarHistorial();
+        };
     </script>
 </body>
 </html>
