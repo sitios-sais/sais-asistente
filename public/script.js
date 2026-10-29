@@ -1,91 +1,9 @@
-let scene, camera, renderer, objetos3D = [];
-
-// Inicializar el entorno gráfico 3D al cargar la página
-function inicializar3D() {
-    const container = document.getElementById('canvas3d-container');
-    
-    scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x03050a);
-
-    camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(0, 5, 10);
-    camera.lookAt(0, 0, 0);
-
-    renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    container.appendChild(renderer.domElement);
-
-    // Luces
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-    scene.add(ambientLight);
-
-    const pointLight = new THREE.PointLight(0x8b5cf6, 2, 50);
-    pointLight.position.set(0, 10, 0);
-    scene.add(pointLight);
-
-    // Cuadrícula del suelo
-    const gridHelper = new THREE.GridHelper(20, 20, 0x8b5cf6, 0x1e293b);
-    gridHelper.position.y = -1;
-    scene.add(gridHelper);
-
-    // Bucle de animación (rota los objetos ligeramente para dar vida)
-    function animate() {
-        requestAnimationFrame(animate);
-        objetos3D.forEach((obj, index) => {
-            obj.rotation.y += 0.005 * (index % 2 === 0 ? 1 : -1);
-        });
-        renderer.render(scene, camera);
-    }
-    animate();
-
-    // Adaptar tamaño si cambia la ventana
-    window.addEventListener('resize', () => {
-        camera.aspect = container.clientWidth / container.clientHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.clientWidth, container.clientHeight);
-    });
-}
-
-// Generar una entidad geométrica 3D física en la pantalla según el decreto
-function generarEntidad3D(tipo = 'default') {
-    let geometria, material;
-
-    // Crear distintas formas basadas en aleatoriedad o tipo
-    const formas = [
-        new THREE.BoxGeometry(1.5, 1.5, 1.5),
-        new THREE.SphereGeometry(1, 32, 32),
-        new THREE.ConeGeometry(1, 2, 32),
-        new THREE.CylinderGeometry(0.8, 0.8, 2, 32)
-    ];
-
-    geometria = formas[Math.floor(Math.random() * formas.length)];
-    
-    const colores = [0x8b5cf6, 0x2563eb, 0x059669, 0xdc2626, 0xf59e0b];
-    material = new THREE.MeshStandardMaterial({
-        color: colores[Math.floor(Math.random() * colores.length)],
-        roughness: 0.3,
-        metalness: 0.8
-    });
-
-    const mesh = new THREE.Mesh(geometria, material);
-
-    // Distribuir aleatoriamente en el espacio 3D
-    mesh.position.set(
-        (Math.random() - 0.5) * 8,
-        Math.random() * 2,
-        (Math.random() - 0.5) * 8
-    );
-
-    scene.add(mesh);
-    objetos3D.push(mesh);
-}
-
-// Sincronización del mundo cada 4 segundos
+// Sincronización automática del mundo global cada 4 segundos
 setInterval(() => {
-    cargarMundoGlobal();
+    sincronizarMundo();
 }, 4000);
 
-async function enviarDecretoDivino() {
+async function ejecutarDecretoCreador() {
     const textarea = document.getElementById('inputDios');
     const decreto = textarea.value.trim();
     const modelo = document.getElementById('modeloSelect').value;
@@ -93,10 +11,10 @@ async function enviarDecretoDivino() {
 
     textarea.value = "";
 
-    // Generar un objeto 3D físico inmediato en pantalla
-    generarEntidad3D();
+    // Ejecutar construcción en el motor 3D
+    construirElemento3D(decreto);
 
-    const promptDios = `[MODO DIOS 3D - ARQUITECTO SUPREMO]\nEl Creador ha ordenado físicamente: "${decreto}"\n\nInstrucciones:\n1. Describe cómo este decreto materializa estructuras físicas, energía o seres en el mundo 3D.\n2. Mantén la narrativa inmersiva de simulación activa.`;
+    const promptDios = `[MODO DIOS 3D - ARQUITECTO]\nEl Creador ordenó: "${decreto}"\n\nNarra la materialización de este elemento en el universo.`;
 
     try {
         await fetch('/api/asistente', {
@@ -104,13 +22,13 @@ async function enviarDecretoDivino() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ mensaje: promptDios, modelo: modelo })
         });
-        cargarMundoGlobal();
+        sincronizarMundo();
     } catch (error) {
-        console.error("Error al enviar decreto 3D:", error);
+        console.error("Error al enviar decreto:", error);
     }
 }
 
-async function enviarAccionJugador() {
+async function enviarAccionMundo() {
     const input = document.getElementById('inputMensaje');
     const accion = input.value.trim();
     const modelo = document.getElementById('modeloSelect').value;
@@ -118,21 +36,21 @@ async function enviarAccionJugador() {
 
     input.value = "";
 
-    const promptJugador = `[MUNDO 3D - ACCIÓN]\nEl viajero realiza: "${accion}"\n\nSimula la consecuencia física de esta acción en el entorno tridimensional.`;
+    const promptAccion = `[MUNDO 3D - ACCIÓN]\nEl viajero realiza: "${accion}"\n\nSimula la consecuencia en el entorno.`;
 
     try {
         await fetch('/api/asistente', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mensaje: promptJugador, modelo: modelo })
+            body: JSON.stringify({ mensaje: promptAccion, modelo: modelo })
         });
-        cargarMundoGlobal();
+        sincronizarMundo();
     } catch (error) {
         console.error("Error al enviar acción:", error);
     }
 }
 
-async function cargarMundoGlobal() {
+async function sincronizarMundo() {
     try {
         const respuesta = await fetch('/api/historial');
         const datos = await respuesta.json();
@@ -148,8 +66,8 @@ async function cargarMundoGlobal() {
             contenedorMensajes.innerHTML = `
                 <div class="message assistant-message">
                     <div class="message-body">
-                        <h3>El Vacío 3D</h3>
-                        <p>El espacio tridimensional está vació. Usa el <strong>Panel del Creador</strong> para emitir el primer decreto y ver cómo se materializan objetos físicos.</p>
+                        <h3>El Vacío Absoluto</h3>
+                        <p>Usa el panel izquierdo para ordenar al motor crear elementos físicos.</p>
                     </div>
                 </div>
             `;
@@ -161,8 +79,8 @@ async function cargarMundoGlobal() {
             let textoUsuario = item.usuario;
 
             if (textoUsuario.includes("[MODO DIOS")) {
-                etiqueta = "⚡ Creador (Decreto 3D)";
-                textoUsuario = textoUsuario.replace('[MODO DIOS 3D - ARQUITECTO SUPREMO]\nEl Creador ha ordenado físicamente: "', '').replace('"\n\nInstrucciones:\n1. Describe cómo este...', '');
+                etiqueta = "⚡ Creador";
+                textoUsuario = textoUsuario.replace('[MODO DIOS 3D - ARQUITECTO]\nEl Creador ordenó: "', '').replace('"\n\nNarra la materialización...', '');
             }
 
             contenedorMensajes.innerHTML += `
@@ -177,7 +95,6 @@ async function cargarMundoGlobal() {
             `;
         });
 
-        // Actualizar lista lateral
         const historialContainer = document.getElementById('historial-container');
         historialContainer.innerHTML = '';
         datos.slice(-10).reverse().forEach(item => {
@@ -197,14 +114,12 @@ async function cargarMundoGlobal() {
     }
 }
 
-async function reiniciarUniverso() {
-    if (!confirm("¿Destruir el universo 3D actual?")) return;
+async function reiniciarUniversoTotal() {
+    if (!confirm("¿Destruir el universo y vaciar la base de datos?")) return;
     try {
         await fetch('/api/historial', { method: 'DELETE' });
-        // Limpiar objetos 3D de la escena
-        objetos3D.forEach(obj => scene.remove(obj));
-        objetos3D = [];
-        cargarMundoGlobal();
+        limpiarMundo3DCompleto();
+        sincronizarMundo();
     } catch (error) {
         console.error("Error al reiniciar:", error);
     }
@@ -212,7 +127,7 @@ async function reiniciarUniverso() {
 
 function verificarEnter(event) {
     if (event.key === 'Enter') {
-        enviarAccionJugador();
+        enviarAccionMundo();
     }
 }
 
@@ -222,6 +137,6 @@ function escapeHtml(text) {
 }
 
 window.onload = () => {
-    inicializar3D();
-    cargarMundoGlobal();
+    inicializarMotor3D();
+    sincronizarMundo();
 };
