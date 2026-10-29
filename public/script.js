@@ -1,143 +1,351 @@
-// Sincronizar el mundo global cada 4 segundos para que todos los jugadores vean los cambios en tiempo real
-setInterval(() => {
-    cargarMundoGlobal();
-}, 4000);
+:root {
+    --bg-base: #070a12;
+    --bg-surface: #0d1322;
+    --bg-surface-hover: #162035;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --success: #059669;
+    --success-hover: #047857;
+    --accent: #8b5cf6;
+    --accent-hover: #7c3aed;
+}
 
-async function enviarDecretoDivino() {
-    const textarea = document.getElementById('inputDios');
-    const decreto = textarea.value.trim();
-    const modelo = document.getElementById('modeloSelect').value;
-    if (decreto === "") return;
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-    textarea.value = "";
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-base);
+    color: var(--text-main);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
 
-    // Prompt estricto de Creador / Modo Dios
-    const promptDios = `[MODO DIOS - DECRETO DEL ARQUITECTO SUPREMO]\nEl Creador ha ordenado lo siguiente para dar forma y vida al mundo: "${decreto}"\n\nInstrucciones:\n1. Integra este evento, PNJ, objeto o regla directamente en el mundo persistente.\n2. Describe cómo el universo cambia, cómo reaccionan los habitantes o el entorno ante este mandato divino.\n3. Mantén una narrativa rica y viva para los aventureros que habitan este mundo.`;
+.app-layout {
+    display: flex;
+    flex-direction: column;
+    width: 96vw;
+    max-width: 1350px;
+    height: 94vh;
+    background-color: var(--bg-surface);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
 
-    try {
-        await fetch('/api/asistente', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mensaje: promptDios, modelo: modelo })
-        });
-        cargarMundoGlobal();
-    } catch (error) {
-        console.error("Error al enviar decreto divino:", error);
+/* Header */
+.app-header {
+    height: 64px;
+    background-color: rgba(13, 19, 34, 0.98);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+}
+
+.brand-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    width: 28px;
+    height: 28px;
+}
+
+.brand-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text-main);
+    text-transform: lowercase;
+}
+
+.model-select {
+    background-color: var(--bg-base);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    outline: none;
+    cursor: pointer;
+}
+
+.main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Sidebar / Creador Panel */
+.sidebar {
+    width: 320px;
+    background-color: #0b101c;
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 10px;
+}
+
+.sidebar-section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.counter-text {
+    font-size: 0.825rem;
+    color: var(--text-muted);
+}
+
+.creator-box {
+    background: rgba(139, 92, 246, 0.05);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.creator-hint {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.creator-textarea {
+    background-color: var(--bg-base);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    padding: 8px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    resize: none;
+    height: 70px;
+    outline: none;
+}
+
+.creator-textarea:focus {
+    border-color: var(--accent);
+}
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-btn {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+}
+
+.menu-btn.btn-visual {
+    background-color: var(--accent);
+}
+.menu-btn.btn-visual:hover {
+    background-color: var(--accent-hover);
+}
+
+.menu-btn.btn-danger {
+    background-color: var(--danger);
+}
+.menu-btn.btn-danger:hover {
+    background-color: var(--danger-hover);
+}
+
+.history-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 4px;
+}
+
+.history-card {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+}
+
+.history-card p {
+    color: var(--text-muted);
+}
+
+.history-empty {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-align: center;
+    padding: 16px 0;
+}
+
+/* Chat Workspace & 3D Canvas */
+.chat-workspace {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-surface);
+    position: relative;
+    overflow: hidden;
+}
+
+.world-banner {
+    background: rgba(37, 99, 235, 0.1);
+    border-bottom: 1px solid rgba(37, 99, 235, 0.2);
+    padding: 6px 24px;
+    font-size: 0.78rem;
+    color: #93c5fd;
+    text-align: center;
+}
+
+/* Contenedor del Visor 3D */
+.canvas3d-wrapper {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    background-color: #03050a;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#canvas3d-container {
+    width: 100%;
+    height: 100%;
+}
+
+.canvas-overlay {
+    position: absolute;
+    top: 10px;
+    left: 15px;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    color: #c4b5fd;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.message {
+    max-width: 80%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.user-message {
+    background-color: var(--primary);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.assistant-message {
+    background-color: var(--bg-surface-hover);
+    color: var(--text-main);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.assistant-message h3 {
+    color: #c4b5fd;
+    margin-bottom: 6px;
+}
+
+/* Input Area */
+.chat-input-wrapper {
+    padding: 16px 20px;
+    background-color: rgba(13, 19, 34, 0.98);
+    border-top: 1px solid var(--border-color);
+}
+
+.chat-input-container {
+    display: flex;
+    gap: 12px;
+    background-color: var(--bg-base);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 6px 8px 6px 14px;
+}
+
+.chat-input-container input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text-main);
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.send-btn {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.send-btn:hover {
+    background-color: var(--primary-hover);
+}
+
+@media (max-width: 768px) {
+    .app-layout {
+        flex-direction: column;
+        height: 100vh;
+        width: 100vw;
+        border-radius: 0;
+    }
+    .main-container {
+        flex-direction: column-reverse;
+    }
+    .sidebar {
+        width: 100%;
+        max-height: 180px;
+    }
+    .canvas3d-wrapper {
+        height: 180px;
     }
 }
-
-async function enviarAccionJugador() {
-    const input = document.getElementById('inputMensaje');
-    const accion = input.value.trim();
-    const modelo = document.getElementById('modeloSelect').value;
-    if (accion === "") return;
-
-    input.value = "";
-
-    // Prompt de acción de aventurero en el mundo abierto
-    const promptJugador = `[MUNDO ABIERTO - ACCIÓN DE AVENTURERO]\nUn viajero realiza la siguiente acción en el mundo: "${accion}"\n\nInstrucciones:\n1. Simula el resultado de esta acción basándote en el estado actual del mundo.\n2. Permite que el entorno y los PNJs reaccionen de manera autónoma.\n3. Haz avanzar la simulación viva de este universo persistente.`;
-
-    try {
-        await fetch('/api/asistente', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mensaje: promptJugador, modelo: modelo })
-        });
-        cargarMundoGlobal();
-    } catch (error) {
-        console.error("Error al enviar acción del jugador:", error);
-    }
-}
-
-async function cargarMundoGlobal() {
-    try {
-        const respuesta = await fetch('/api/historial');
-        const datos = await respuesta.json();
-        
-        document.getElementById('contadorTotal').innerText = `Eventos en la historia: ${datos.length}`;
-
-        const contenedorMensajes = document.getElementById('chatMensajes');
-        const estaAbajo = contenedorMensajes.scrollHeight - contenedorMensajes.scrollTop <= contenedorMensajes.clientHeight + 50;
-
-        contenedorMensajes.innerHTML = '';
-
-        if (datos.length === 0) {
-            contenedorMensajes.innerHTML = `
-                <div class="message assistant-message">
-                    <div class="message-body">
-                        <h3>El Génesis</h3>
-                        <p>El universo aún no ha sido esculpido. Usa el <strong>Panel del Creador (Modo Dios)</strong> a la izquierda para escribir el primer decreto y dar vida a la tierra, el cielo y las primeras criaturas.</p>
-                    </div>
-                </div>
-            `;
-            return;
-        }
-
-        datos.forEach(item => {
-            let etiqueta = "Aventurero";
-            let textoUsuario = item.usuario;
-
-            if (textoUsuario.includes("[MODO DIOS")) {
-                etiqueta = "⚡ Creador (Decreto Divino)";
-                textoUsuario = textoUsuario.replace('[MODO DIOS - DECRETO DEL ARQUITECTO SUPREMO]\nEl Creador ha ordenado lo siguiente para dar forma y vida al mundo: "', '').replace('"\n\nInstrucciones:\n1. Integra este evento...', '');
-            } else if (textoUsuario.includes("[MUNDO ABIERTO")) {
-                etiqueta = "Viajero";
-                textoUsuario = textoUsuario.replace('[MUNDO ABIERTO - ACCIÓN DE AVENTURERO]\nUn viajero realiza la siguiente acción en el mundo: "', '').replace('"\n\nInstrucciones:\n1. Simula el resultado...', '');
-            }
-
-            contenedorMensajes.innerHTML += `
-                <div class="message user-message">
-                    <p><strong>${etiqueta}:</strong> ${escapeHtml(textoUsuario)}</p>
-                </div>
-            `;
-            contenedorMensajes.innerHTML += `
-                <div class="message assistant-message">
-                    <div class="message-body">${marked.parse(item.respuesta)}</div>
-                </div>
-            `;
-        });
-
-        // Actualizar lista lateral de eventos
-        const historialContainer = document.getElementById('historial-container');
-        historialContainer.innerHTML = '';
-        datos.slice(-10).reverse().forEach(item => {
-            historialContainer.innerHTML += `
-                <div class="history-card">
-                    <p>${escapeHtml(item.usuario.substring(0, 40))}...</p>
-                    <small style="color: var(--text-muted);">${new Date(item.fecha).toLocaleTimeString()}</small>
-                </div>
-            `;
-        });
-
-        if (estaAbajo) {
-            contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
-        }
-    } catch (error) {
-        console.error("Error al sincronizar simulación:", error);
-    }
-}
-
-async function reiniciarUniverso() {
-    if (!confirm("¿Estás seguro de destruir este universo? Se borrará todo el historial y la base de datos volverá al vacío.")) return;
-    try {
-        await fetch('/api/historial', { method: 'DELETE' });
-        cargarMundoGlobal();
-    } catch (error) {
-        console.error("Error al reiniciar universo:", error);
-    }
-}
-
-function verificarEnter(event) {
-    if (event.key === 'Enter') {
-        enviarAccionJugador();
-    }
-}
-
-function escapeHtml(text) {
-    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-    return text.replace(/[&<>"']/g, m => map[m]);
-}
-
-window.onload = () => {
-    cargarMundoGlobal();
-};
