@@ -1,142 +1,136 @@
-let ultimoHistorialData = [];
+// Sincronizar el mundo global cada 4 segundos para que todos los jugadores vean los cambios en tiempo real
+setInterval(() => {
+    cargarMundoGlobal();
+}, 4000);
 
-async function enviarMensaje() {
-    const input = document.getElementById('inputMensaje');
-    const texto = input.value.trim();
+async function enviarDecretoDivino() {
+    const textarea = document.getElementById('inputDios');
+    const decreto = textarea.value.trim();
     const modelo = document.getElementById('modeloSelect').value;
-    if (texto === "") return;
+    if (decreto === "") return;
 
-    agregarMensajeAlChat(texto, 'user');
-    input.value = "";
+    textarea.value = "";
 
-    const idEscribiendo = mostrarIndicadorEscribiendo();
+    // Prompt estricto de Creador / Modo Dios
+    const promptDios = `[MODO DIOS - DECRETO DEL ARQUITECTO SUPREMO]\nEl Creador ha ordenado lo siguiente para dar forma y vida al mundo: "${decreto}"\n\nInstrucciones:\n1. Integra este evento, PNJ, objeto o regla directamente en el mundo persistente.\n2. Describe cómo el universo cambia, cómo reaccionan los habitantes o el entorno ante este mandato divino.\n3. Mantén una narrativa rica y viva para los aventureros que habitan este mundo.`;
 
     try {
-        const respuesta = await fetch('/api/asistente', {
+        await fetch('/api/asistente', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mensaje: texto, modelo: modelo })
+            body: JSON.stringify({ mensaje: promptDios, modelo: modelo })
         });
-        const data = await respuesta.json();
-        
-        removerIndicadorEscribiendo(idEscribiendo);
-
-        const caracteres = data.respuesta.length;
-        agregarMensajeAlChat(data.respuesta, 'assistant', caracteres);
-        
-        cargarHistorial();
+        cargarMundoGlobal();
     } catch (error) {
-        console.error("Error al conectar:", error);
-        removerIndicadorEscribiendo(idEscribiendo);
-        agregarMensajeAlChat("Lo siento, ocurrió un error de conexión con el servidor.", 'assistant');
+        console.error("Error al enviar decreto divino:", error);
     }
 }
 
-async function cargarHistorial() {
+async function enviarAccionJugador() {
+    const input = document.getElementById('inputMensaje');
+    const accion = input.value.trim();
+    const modelo = document.getElementById('modeloSelect').value;
+    if (accion === "") return;
+
+    input.value = "";
+
+    // Prompt de acción de aventurero en el mundo abierto
+    const promptJugador = `[MUNDO ABIERTO - ACCIÓN DE AVENTURERO]\nUn viajero realiza la siguiente acción en el mundo: "${accion}"\n\nInstrucciones:\n1. Simula el resultado de esta acción basándote en el estado actual del mundo.\n2. Permite que el entorno y los PNJs reaccionen de manera autónoma.\n3. Haz avanzar la simulación viva de este universo persistente.`;
+
+    try {
+        await fetch('/api/asistente', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mensaje: promptJugador, modelo: modelo })
+        });
+        cargarMundoGlobal();
+    } catch (error) {
+        console.error("Error al enviar acción del jugador:", error);
+    }
+}
+
+async function cargarMundoGlobal() {
     try {
         const respuesta = await fetch('/api/historial');
         const datos = await respuesta.json();
-        ultimoHistorialData = datos;
         
-        document.getElementById('contadorTotal').innerText = `Mensajes guardados: ${datos.length}`;
+        document.getElementById('contadorTotal').innerText = `Eventos en la historia: ${datos.length}`;
 
-        const contenedor = document.getElementById('historial-container');
-        contenedor.innerHTML = '';
-        
+        const contenedorMensajes = document.getElementById('chatMensajes');
+        const estaAbajo = contenedorMensajes.scrollHeight - contenedorMensajes.scrollTop <= contenedorMensajes.clientHeight + 50;
+
+        contenedorMensajes.innerHTML = '';
+
         if (datos.length === 0) {
-            contenedor.innerHTML = '<div class="history-empty">Sin registros guardados</div>';
+            contenedorMensajes.innerHTML = `
+                <div class="message assistant-message">
+                    <div class="message-body">
+                        <h3>El Génesis</h3>
+                        <p>El universo aún no ha sido esculpido. Usa el <strong>Panel del Creador (Modo Dios)</strong> a la izquierda para escribir el primer decreto y dar vida a la tierra, el cielo y las primeras criaturas.</p>
+                    </div>
+                </div>
+            `;
             return;
         }
 
         datos.forEach(item => {
-            contenedor.innerHTML += `
-                <div class="history-card">
-                    <p><strong>Tú:</strong> ${escapeHtml(item.usuario)}</p>
-                    <p style="color: var(--text-muted);"><strong>IA:</strong> ${escapeHtml(item.respuesta.substring(0, 45))}...</p>
-                    <small>${new Date(item.fecha).toLocaleTimeString()}</small>
+            let etiqueta = "Aventurero";
+            let textoUsuario = item.usuario;
+
+            if (textoUsuario.includes("[MODO DIOS")) {
+                etiqueta = "⚡ Creador (Decreto Divino)";
+                textoUsuario = textoUsuario.replace('[MODO DIOS - DECRETO DEL ARQUITECTO SUPREMO]\nEl Creador ha ordenado lo siguiente para dar forma y vida al mundo: "', '').replace('"\n\nInstrucciones:\n1. Integra este evento...', '');
+            } else if (textoUsuario.includes("[MUNDO ABIERTO")) {
+                etiqueta = "Viajero";
+                textoUsuario = textoUsuario.replace('[MUNDO ABIERTO - ACCIÓN DE AVENTURERO]\nUn viajero realiza la siguiente acción en el mundo: "', '').replace('"\n\nInstrucciones:\n1. Simula el resultado...', '');
+            }
+
+            contenedorMensajes.innerHTML += `
+                <div class="message user-message">
+                    <p><strong>${etiqueta}:</strong> ${escapeHtml(textoUsuario)}</p>
+                </div>
+            `;
+            contenedorMensajes.innerHTML += `
+                <div class="message assistant-message">
+                    <div class="message-body">${marked.parse(item.respuesta)}</div>
                 </div>
             `;
         });
+
+        // Actualizar lista lateral de eventos
+        const historialContainer = document.getElementById('historial-container');
+        historialContainer.innerHTML = '';
+        datos.slice(-10).reverse().forEach(item => {
+            historialContainer.innerHTML += `
+                <div class="history-card">
+                    <p>${escapeHtml(item.usuario.substring(0, 40))}...</p>
+                    <small style="color: var(--text-muted);">${new Date(item.fecha).toLocaleTimeString()}</small>
+                </div>
+            `;
+        });
+
+        if (estaAbajo) {
+            contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
+        }
     } catch (error) {
-        console.error("Error al cargar historial:", error);
+        console.error("Error al sincronizar simulación:", error);
     }
 }
 
-async function limpiarBaseDatos() {
-    if (!confirm("¿Estás seguro de borrar todo el historial en MongoDB?")) return;
+async function reiniciarUniverso() {
+    if (!confirm("¿Estás seguro de destruir este universo? Se borrará todo el historial y la base de datos volverá al vacío.")) return;
     try {
         await fetch('/api/historial', { method: 'DELETE' });
-        cargarHistorial();
-        alert("Base de datos vaciada con éxito.");
+        cargarMundoGlobal();
     } catch (error) {
-        console.error("Error al limpiar:", error);
+        console.error("Error al reiniciar universo:", error);
     }
-}
-
-function exportarHistorial() {
-    if (ultimoHistorialData.length === 0) {
-        alert("No hay historial para exportar.");
-        return;
-    }
-    let textoExport = "=== HISTORIAL DE CONVERSACIONES - SAIS ===\n\n";
-    ultimoHistorialData.forEach((item, index) => {
-        textoExport += `[${index + 1}] Fecha: ${new Date(item.fecha).toLocaleString()}\n`;
-        textoExport += `Tú: ${item.usuario}\n`;
-        textoExport += `IA: ${item.respuesta}\n`;
-        textoExport += "--------------------------------------------------\n\n";
-    });
-
-    const blob = new Blob([textoExport], { type: 'text/plain;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `sais_historial_${Date.now()}.txt`;
-    a.click();
-    URL.revokeObjectURL(url);
 }
 
 function verificarEnter(event) {
     if (event.key === 'Enter') {
-        enviarMensaje();
+        enviarAccionJugador();
     }
-}
-
-function agregarMensajeAlChat(texto, remitente, caracteres = null) {
-    const contenedorMensajes = document.getElementById('chatMensajes');
-    const divMensaje = document.createElement('div');
-    divMensaje.className = `message ${remitente === 'user' ? 'user-message' : 'assistant-message'}`;
-    
-    if (remitente === 'assistant') {
-        const htmlMarkdown = marked.parse(texto);
-        let contenidoHtml = `<div class="message-body">${htmlMarkdown}</div>`;
-        
-        if (caracteres !== null) {
-            contenidoHtml += `
-                <div class="message-footer">
-                    <span class="meta-info">Caracteres: ${caracteres}</span>
-                    <button class="copy-btn" onclick="copiarTexto(this, \`${escapeJs(texto)}\`)">Copiar</button>
-                </div>
-            `;
-        }
-        divMensaje.innerHTML = contenidoHtml;
-    } else {
-        divMensaje.innerHTML = `<p>${escapeHtml(texto)}</p>`;
-    }
-
-    contenedorMensajes.appendChild(divMensaje);
-    contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
-}
-
-function copiarTexto(boton, texto) {
-    navigator.clipboard.writeText(texto).then(() => {
-        const originalText = boton.innerText;
-        boton.innerText = 'Copiado';
-        setTimeout(() => { boton.innerText = originalText; }, 2000);
-    });
-}
-
-function escapeJs(str) {
-    return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
 }
 
 function escapeHtml(text) {
@@ -144,22 +138,6 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, m => map[m]);
 }
 
-function mostrarIndicadorEscribiendo() {
-    const contenedorMensajes = document.getElementById('chatMensajes');
-    const divMensaje = document.createElement('div');
-    divMensaje.className = 'message assistant-message typing-indicator';
-    divMensaje.id = 'temp-escribiendo';
-    divMensaje.innerHTML = '<p>Analizando y redactando respuesta...</p>';
-    contenedorMensajes.appendChild(divMensaje);
-    contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
-    return 'temp-escribiendo';
-}
-
-function removerIndicadorEscribiendo(id) {
-    const elemento = document.getElementById(id);
-    if (elemento) elemento.remove();
-}
-
 window.onload = () => {
-    cargarHistorial();
+    cargarMundoGlobal();
 };
