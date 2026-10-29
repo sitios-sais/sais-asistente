@@ -3,504 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Asistente Personal IA Ultra Pro</title>
-    <!-- Librería Marked para renderizar Markdown (tablas, negritas, código) -->
+    <title>sais</title>
+    <!-- Librería para renderizar Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #070913 0%, #0b0f19 100%);
-            color: #f1f5f9;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-        }
-        .main-wrapper {
-            display: flex;
-            width: 94%;
-            max-width: 1100px;
-            height: 90vh;
-            background: rgba(17, 24, 39, 0.75);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        /* Panel Lateral de Historial */
-        .history-panel {
-            width: 320px;
-            background: rgba(15, 23, 42, 0.9);
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-        }
-        .history-header {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 6px;
-            color: #60a5fa;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .contador-total {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            margin-bottom: 14px;
-        }
-        .history-list {
-            flex: 1;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            padding-right: 4px;
-        }
-        .history-item {
-            background: rgba(30, 41, 59, 0.7);
-            padding: 10px 12px;
-            border-radius: 10px;
-            font-size: 0.82rem;
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            transition: background 0.2s;
-        }
-        .history-item:hover {
-            background: rgba(51, 65, 85, 0.8);
-        }
-        .history-item p {
-            margin-bottom: 4px;
-            line-height: 1.3;
-        }
-        .history-item small {
-            color: #94a3b8;
-            font-size: 0.72rem;
-        }
-        .btn-action {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 9px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: 8px;
-            font-size: 0.85rem;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-        }
-        .btn-action:hover {
-            background: #1d4ed8;
-            transform: translateY(-1px);
-        }
-        .btn-success {
-            background: #059669;
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
-        }
-        .btn-success:hover {
-            background: #047857;
-        }
-        .btn-danger {
-            background: #dc2626;
-            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
-        }
-        .btn-danger:hover {
-            background: #b91c1c;
-        }
-
-        /* Panel Principal de Chat */
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: transparent;
-        }
-        .chat-header {
-            background: rgba(31, 41, 55, 0.6);
-            padding: 18px 24px;
-            font-size: 1.15rem;
-            font-weight: bold;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .model-selector {
-            background: #0b0f19;
-            color: #f1f5f9;
-            border: 1px solid #4b5563;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            outline: none;
-            cursor: pointer;
-        }
-        .chat-mensajes {
-            flex: 1;
-            padding: 24px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-        .mensaje {
-            max-width: 80%;
-            padding: 14px 18px;
-            border-radius: 14px;
-            font-size: 0.94rem;
-            line-height: 1.6;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-        }
-        .mensaje.usuario {
-            background: #2563eb;
-            color: white;
-            align-self: flex-end;
-            border-bottom-right-radius: 4px;
-        }
-        .mensaje.asistente {
-            background: rgba(31, 41, 55, 0.8);
-            color: #e2e8f0;
-            align-self: flex-start;
-            border-bottom-left-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        /* Estilos Markdown internos para la IA */
-        .mensaje.asistente table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 10px 0;
-            font-size: 0.88rem;
-        }
-        .mensaje.asistente th, .mensaje.asistente td {
-            border: 1px solid #374151;
-            padding: 6px 10px;
-            text-align: left;
-        }
-        .mensaje.asistente th {
-            background: #111827;
-        }
-        .mensaje.asistente code {
-            background: #0b0f19;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-family: monospace;
-            font-size: 0.85rem;
-            color: #60a5fa;
-        }
-        .mensaje.asistente pre {
-            background: #0b0f19;
-            padding: 10px;
-            border-radius: 8px;
-            overflow-x: auto;
-            margin: 8px 0;
-        }
-        .mensaje.asistente ul, .mensaje.asistente ol {
-            padding-left: 20px;
-            margin: 6px 0;
-        }
-
-        .meta-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 8px;
-            padding-top: 6px;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-        }
-        .meta-info {
-            font-size: 0.72rem;
-            color: #94a3b8;
-        }
-        .btn-copiar {
-            background: transparent;
-            border: 1px solid #4b5563;
-            color: #94a3b8;
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 0.72rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn-copiar:hover {
-            background: #374151;
-            color: #fff;
-        }
-
-        .escribiendo {
-            color: #94a3b8;
-            font-style: italic;
-            font-size: 0.9rem;
-        }
-
-        .chat-input-area {
-            display: flex;
-            padding: 18px 24px;
-            background: rgba(31, 41, 55, 0.6);
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
-            gap: 12px;
-        }
-        .chat-input-area input {
-            flex: 1;
-            padding: 14px 18px;
-            background: #0b0f19;
-            border: 1px solid #374151;
-            border-radius: 10px;
-            color: white;
-            font-size: 0.95rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .chat-input-area input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
-        }
-        .chat-input-area button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 0 24px;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
-        .chat-input-area button:hover {
-            background: #2563eb;
-            transform: translateY(-1px);
-        }
-
-        @media (max-width: 768px) {
-            .main-wrapper {
-                flex-direction: column;
-                height: 98vh;
-                width: 98%;
-            }
-            .history-panel {
-                width: 100%;
-                max-height: 180px;
-                padding: 12px;
-            }
-        }
-    </style>
+    <!-- Hoja de estilos separada -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="main-wrapper">
-        <!-- Panel Lateral -->
-        <div class="history-panel">
-            <div class="history-header">
-                <span>📚 Historial DB</span>
+    <div class="app-layout">
+        <!-- Barra de Navegación Superior -->
+        <header class="app-header">
+            <div class="brand-container">
+                <!-- Logotipo minimalista integrado -->
+                <svg class="brand-logo" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="24" height="24" rx="6" fill="#2563EB"/>
+                    <path d="M7 12L10 15L17 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="brand-name">sais</span>
             </div>
-            <div id="contadorTotal" class="contador-total">Mensajes guardados: 0</div>
-            <button class="btn-action" onclick="cargarHistorial()">Actualizar Historial</button>
-            <button class="btn-action btn-success" onclick="exportarHistorial()">Exportar Chat (TXT)</button>
-            <button class="btn-action btn-danger" onclick="limpiarBaseDatos()">Vaciar Base de Datos</button>
-            <div id="historial-container" class="history-list" style="margin-top: 6px;">
-                <div class="history-item"><p style="color: #94a3b8; text-align: center;">Cargando...</p></div>
-            </div>
-        </div>
-
-        <!-- Panel del Chat -->
-        <div class="chat-container">
-            <div class="chat-header">
-                <span>🤖 Asistente Ultra Pro</span>
-                <!-- Selector de Modelos -->
-                <select id="modeloSelect" class="model-selector">
+            
+            <div class="header-controls">
+                <select id="modeloSelect" class="model-select">
                     <option value="openai/gpt-oss-20b">GPT OSS 20B</option>
                     <option value="llama3-8b-8192">Llama 3 8B</option>
                 </select>
             </div>
-            <div id="chatMensajes" class="chat-mensajes">
-                <div class="mensaje asistente">
-                    ¡Interfaz renovada con éxito! Ahora soporto formato Markdown avanzado (tablas, negritas, código), botón de copia rápida y exportación de chats. ¿Qué charlamos hoy?
+        </header>
+
+        <div class="main-container">
+            <!-- Menú Lateral / Panel de Historial -->
+            <aside class="sidebar">
+                <div class="sidebar-section-title">Control de Base de Datos</div>
+                <div id="contadorTotal" class="counter-text">Mensajes guardados: 0</div>
+                
+                <div class="sidebar-menu">
+                    <button class="menu-btn" onclick="cargarHistorial()">Actualizar Historial</button>
+                    <button class="menu-btn btn-alt" onclick="exportarHistorial()">Exportar Chat (TXT)</button>
+                    <button class="menu-btn btn-danger" onclick="limpiarBaseDatos()">Vaciar Base de Datos</button>
                 </div>
-            </div>
-            <div class="chat-input-area">
-                <input type="text" id="inputMensaje" placeholder="Escribe un mensaje..." onkeypress="verificarEnter(event)">
-                <button onclick="enviarMensaje()">Enviar</button>
-            </div>
+
+                <div class="sidebar-section-title" style="margin-top: 24px;">Registros Almacenados</div>
+                <div id="historial-container" class="history-list">
+                    <div class="history-empty">Cargando registros...</div>
+                </div>
+            </aside>
+
+            <!-- Área Principal del Chat -->
+            <main class="chat-workspace">
+                <div id="chatMensajes" class="chat-messages">
+                    <div class="message assistant-message">
+                        <div class="message-body">
+                            <p>Sistema inicializado. Escribe un mensaje para comenzar.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chat-input-wrapper">
+                    <div class="chat-input-container">
+                        <input type="text" id="inputMensaje" placeholder="Escribe tu mensaje aquí..." onkeypress="verificarEnter(event)">
+                        <button class="send-btn" onclick="enviarMensaje()">Enviar</button>
+                    </div>
+                </div>
+            </main>
         </div>
     </div>
 
-    <script>
-        let ultimoHistorialData = [];
-
-        async function enviarMensaje() {
-            const input = document.getElementById('inputMensaje');
-            const texto = input.value.trim();
-            const modelo = document.getElementById('modeloSelect').value;
-            if (texto === "") return;
-
-            agregarMensajeAlChat(texto, 'usuario');
-            input.value = "";
-
-            const idEscribiendo = mostrarIndicadorEscribiendo();
-
-            try {
-                const respuesta = await fetch('/api/asistente', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ mensaje: texto, modelo: modelo })
-                });
-                const data = await respuesta.json();
-                
-                removerIndicadorEscribiendo(idEscribiendo);
-
-                const caracteres = data.respuesta.length;
-                agregarMensajeAlChat(data.respuesta, 'asistente', caracteres);
-                
-                cargarHistorial();
-            } catch (error) {
-                console.error("Error al conectar:", error);
-                removerIndicadorEscribiendo(idEscribiendo);
-                agregarMensajeAlChat("Lo siento, ocurrió un error de conexión.", 'asistente');
-            }
-        }
-
-        async function cargarHistorial() {
-            try {
-                const respuesta = await fetch('/api/historial');
-                const datos = await respuesta.json();
-                ultimoHistorialData = datos; // Guardamos para exportar
-                
-                document.getElementById('contadorTotal').innerText = `Mensajes guardados: ${datos.length}`;
-
-                const contenedor = document.getElementById('historial-container');
-                contenedor.innerHTML = '';
-                
-                if (datos.length === 0) {
-                    contenedor.innerHTML = '<div class="history-item"><p>La base de datos está vacía.</p></div>';
-                    return;
-                }
-
-                datos.forEach(item => {
-                    contenedor.innerHTML += `
-                        <div class="history-item">
-                            <p><strong>Tú:</strong> ${item.usuario}</p>
-                            <p style="color: #cbd5e1;"><strong>IA:</strong> ${item.respuesta.substring(0, 60)}...</p>
-                            <small>${new Date(item.fecha).toLocaleTimeString()}</small>
-                        </div>
-                    `;
-                });
-            } catch (error) {
-                console.error("Error al cargar historial:", error);
-            }
-        }
-
-        async function limpiarBaseDatos() {
-            if (!confirm("¿Estás seguro de que quieres borrar todo el historial guardado en MongoDB?")) return;
-            try {
-                await fetch('/api/historial', { method: 'DELETE' });
-                cargarHistorial();
-                alert("¡Base de datos vaciada con éxito!");
-            } catch (error) {
-                console.error("Error al limpiar:", error);
-            }
-        }
-
-        function exportarHistorial() {
-            if (ultimoHistorialData.length === 0) {
-                alert("No hay historial para exportar.");
-                return;
-            }
-            let textoExport = "=== HISTORIAL DE CONVERSACIONES - ASISTENTE IA ===\n\n";
-            ultimoHistorialData.forEach((item, index) => {
-                textoExport += `[${index + 1}] Fecha: ${new Date(item.fecha).toLocaleString()}\n`;
-                textoExport += `Tú: ${item.usuario}\n`;
-                textoExport += `IA: ${item.respuesta}\n`;
-                textoExport += "--------------------------------------------------\n\n";
-            });
-
-            const blob = new Blob([textoExport], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `historial_asistente_${Date.now()}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-        }
-
-        function verificarEnter(event) {
-            if (event.key === 'Enter') {
-                enviarMensaje();
-            }
-        }
-
-        function agregarMensajeAlChat(texto, remitente, caracteres = null) {
-            const contenedorMensajes = document.getElementById('chatMensajes');
-            const divMensaje = document.createElement('div');
-            divMensaje.className = `mensaje ${remitente}`;
-            
-            if (remitente === 'asistente') {
-                // Renderizamos Markdown con marked.js para tablas, negritas, etc.
-                const htmlMarkdown = marked.parse(texto);
-                let contenidoHtml = `<div>${htmlMarkdown}</div>`;
-                
-                if (caracteres !== null) {
-                    contenidoHtml += `
-                        <div class="meta-footer">
-                            <span class="meta-info">Caracteres: ${caracteres}</span>
-                            <button class="btn-copiar" onclick="copiarTexto(this, \`${escapeJs(texto)}\`)">Copiar</button>
-                        </div>
-                    `;
-                }
-                divMensaje.innerHTML = contenidoHtml;
-            } else {
-                divMensaje.innerHTML = `<p>${escapeHtml(texto)}</p>`;
-            }
-
-            contenedorMensajes.appendChild(divMensaje);
-            contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
-        }
-
-        function copiarTexto(boton, texto) {
-            navigator.clipboard.writeText(texto).then(() => {
-                const originalText = boton.innerText;
-                boton.innerText = '¡Copiado!';
-                setTimeout(() => { boton.innerText = originalText; }, 2000);
-            });
-        }
-
-        function escapeJs(str) {
-            return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
-        }
-
-        function escapeHtml(text) {
-            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return text.replace(/[&<>"']/g, m => map[m]);
-        }
-
-        function mostrarIndicadorEscribiendo() {
-            const contenedorMensajes = document.getElementById('chatMensajes');
-            const divMensaje = document.createElement('div');
-            divMensaje.className = 'mensaje asistente escribiendo';
-            divMensaje.id = 'temp-escribiendo';
-            divMensaje.innerHTML = '<p>🤖 El asistente está pensando y redactando...</p>';
-            contenedorMensajes.appendChild(divMensaje);
-            contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
-            return 'temp-escribiendo';
-        }
-
-        function removerIndicadorEscribiendo(id) {
-            const elemento = document.getElementById(id);
-            if (elemento) elemento.remove();
-        }
-
-        window.onload = () => {
-            cargarHistorial();
-        };
-    </script>
+    <!-- Script de lógica separado -->
+    <script src="script.js"></script>
 </body>
 </html>
