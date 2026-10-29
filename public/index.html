@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sais - Simulador de Dios & Mundo Vivo</title>
+    <title>sais - Motor 3D & Simulador de Dios</title>
+    <!-- Librería Three.js para gráficos 3D en el navegador -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
@@ -17,7 +19,7 @@
                     <rect width="24" height="24" rx="6" fill="#8b5cf6"/>
                     <path d="M7 12L10 15L17 8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <span class="brand-name">sais <small style="font-size:0.7rem; color:#c4b5fd;">[Modo Dios & Simulación]</small></span>
+                <span class="brand-name">sais <small style="font-size:0.7rem; color:#c4b5fd;">[Motor 3D Activo]</small></span>
             </div>
             
             <div class="header-controls">
@@ -29,15 +31,15 @@
         </header>
 
         <div class="main-container">
-            <!-- Menú Lateral: Panel del Creador (Modo Dios) -->
+            <!-- Menú Lateral: Panel del Creador -->
             <aside class="sidebar">
-                <div class="sidebar-section-title">🏛️ Panel del Creador (Modo Dios)</div>
-                <div id="contadorTotal" class="counter-text" style="color: #c4b5fd;">Eventos en la historia: 0</div>
+                <div class="sidebar-section-title">🏛️ Panel del Creador (Modo Dios 3D)</div>
+                <div id="contadorTotal" class="counter-text" style="color: #c4b5fd;">Entidades en el mundo: 0</div>
                 
                 <div class="creator-box">
-                    <p class="creator-hint">Ordena al motor de IA dar forma al universo, crear PNJs o alterar las reglas:</p>
-                    <textarea id="inputDios" class="creator-textarea" placeholder="Ej: Crea una taberna regentada por un elfo ciego llamado Silas, o haz que comience una lluvia de ceniza..."></textarea>
-                    <button class="menu-btn btn-visual" onclick="enviarDecretoDivino()">⚡ Ejecutar Decreto Divino</button>
+                    <p class="creator-hint">Decreta la creación de estructuras físicas (ej. "Crea una torre de cristales oscuros" o "Invoca monolitos de fuego"):</p>
+                    <textarea id="inputDios" class="creator-textarea" placeholder="Escribe tu decreto divino..."></textarea>
+                    <button class="menu-btn btn-visual" onclick="enviarDecretoDivino()">⚡ Generar en el Mundo 3D</button>
                 </div>
 
                 <div class="sidebar-menu" style="margin-top: 16px;">
@@ -50,25 +52,31 @@
                 </div>
             </aside>
 
-            <!-- Área Principal: Mundo Abierto Vivo para Jugadores -->
+            <!-- Área Principal: Visor 3D y Chat -->
             <main class="chat-workspace">
                 <div class="world-banner">
-                    <span>🌍 Mundo Abierto Persistente: Los PNJs y el entorno reaccionan de forma autónoma.</span>
+                    <span>🌍 Simulador 3D Activo: Los decretos divinos esculpen objetos físicos en pantalla.</span>
+                </div>
+
+                <!-- Visor 3D interactivo -->
+                <div class="canvas3d-wrapper">
+                    <div id="canvas3d-container"></div>
+                    <div class="canvas-overlay">Visor 3D en Tiempo Real</div>
                 </div>
 
                 <div id="chatMensajes" class="chat-messages">
                     <div class="message assistant-message">
                         <div class="message-body">
-                            <h3>Bienvenido al Simulador Vivo de sais</h3>
-                            <p>Este mundo está activo 24/7 en la base de datos. Utiliza el panel izquierdo si eres el Creador para esculpir el universo, o escribe tus acciones aquí abajo si eres un aventurero explorando el mundo abierto.</p>
+                            <h3>Motor 3D Inicializado</h3>
+                            <p>Usa el panel de la izquierda para emitir decretos. Cada orden materializará objetos tridimensionales en el visor superior.</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="chat-input-wrapper">
                     <div class="chat-input-container">
-                        <input type="text" id="inputMensaje" placeholder="Escribe tu acción libre en el mundo (ej. 'Camino hacia el mercado a observar a la gente')..." onkeypress="verificarEnter(event)">
-                        <button class="send-btn" onclick="enviarAccionJugador()">Actuar en el Mundo</button>
+                        <input type="text" id="inputMensaje" placeholder="Escribe tu acción libre en el mundo..." onkeypress="verificarEnter(event)">
+                        <button class="send-btn" onclick="enviarAccionJugador()">Actuar</button>
                     </div>
                 </div>
             </main>
