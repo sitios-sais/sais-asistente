@@ -1,351 +1,227 @@
-:root {
-    --bg-base: #070a12;
-    --bg-surface: #0d1322;
-    --bg-surface-hover: #162035;
-    --border-color: rgba(255, 255, 255, 0.08);
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
-    --text-main: #f1f5f9;
-    --text-muted: #94a3b8;
-    --danger: #dc2626;
-    --danger-hover: #b91c1c;
-    --success: #059669;
-    --success-hover: #047857;
-    --accent: #8b5cf6;
-    --accent-hover: #7c3aed;
-}
+let scene, camera, renderer, objetos3D = [];
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+// Inicializar el entorno gráfico 3D al cargar la página
+function inicializar3D() {
+    const container = document.getElementById('canvas3d-container');
+    
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x03050a);
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background-color: var(--bg-base);
-    color: var(--text-main);
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-}
+    camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
+    camera.position.set(0, 5, 10);
+    camera.lookAt(0, 0, 0);
 
-.app-layout {
-    display: flex;
-    flex-direction: column;
-    width: 96vw;
-    max-width: 1350px;
-    height: 94vh;
-    background-color: var(--bg-surface);
-    border-radius: 16px;
-    border: 1px solid var(--border-color);
-    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
-    overflow: hidden;
-}
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    container.appendChild(renderer.domElement);
 
-/* Header */
-.app-header {
-    height: 64px;
-    background-color: rgba(13, 19, 34, 0.98);
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 24px;
-}
+    // Luces
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+    scene.add(ambientLight);
 
-.brand-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+    const pointLight = new THREE.PointLight(0x8b5cf6, 2, 50);
+    pointLight.position.set(0, 10, 0);
+    scene.add(pointLight);
 
-.brand-logo {
-    width: 28px;
-    height: 28px;
-}
+    // Cuadrícula del suelo
+    const gridHelper = new THREE.GridHelper(20, 20, 0x8b5cf6, 0x1e293b);
+    gridHelper.position.y = -1;
+    scene.add(gridHelper);
 
-.brand-name {
-    font-size: 1.25rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--text-main);
-    text-transform: lowercase;
-}
-
-.model-select {
-    background-color: var(--bg-base);
-    color: var(--text-main);
-    border: 1px solid var(--border-color);
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    outline: none;
-    cursor: pointer;
-}
-
-.main-container {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-}
-
-/* Sidebar / Creador Panel */
-.sidebar {
-    width: 320px;
-    background-color: #0b101c;
-    border-right: 1px solid var(--border-color);
-    display: flex;
-    flex-direction: column;
-    padding: 20px;
-    gap: 10px;
-}
-
-.sidebar-section-title {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--text-muted);
-    font-weight: 600;
-}
-
-.counter-text {
-    font-size: 0.825rem;
-    color: var(--text-muted);
-}
-
-.creator-box {
-    background: rgba(139, 92, 246, 0.05);
-    border: 1px solid rgba(139, 92, 246, 0.2);
-    border-radius: 10px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.creator-hint {
-    font-size: 0.78rem;
-    color: var(--text-muted);
-    line-height: 1.4;
-}
-
-.creator-textarea {
-    background-color: var(--bg-base);
-    border: 1px solid var(--border-color);
-    color: var(--text-main);
-    padding: 8px;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    resize: none;
-    height: 70px;
-    outline: none;
-}
-
-.creator-textarea:focus {
-    border-color: var(--accent);
-}
-
-.sidebar-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.menu-btn {
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: center;
-}
-
-.menu-btn.btn-visual {
-    background-color: var(--accent);
-}
-.menu-btn.btn-visual:hover {
-    background-color: var(--accent-hover);
-}
-
-.menu-btn.btn-danger {
-    background-color: var(--danger);
-}
-.menu-btn.btn-danger:hover {
-    background-color: var(--danger-hover);
-}
-
-.history-list {
-    flex: 1;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-right: 4px;
-}
-
-.history-card {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--border-color);
-    padding: 8px 10px;
-    border-radius: 6px;
-    font-size: 0.78rem;
-}
-
-.history-card p {
-    color: var(--text-muted);
-}
-
-.history-empty {
-    color: var(--text-muted);
-    font-size: 0.8rem;
-    text-align: center;
-    padding: 16px 0;
-}
-
-/* Chat Workspace & 3D Canvas */
-.chat-workspace {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background-color: var(--bg-surface);
-    position: relative;
-    overflow: hidden;
-}
-
-.world-banner {
-    background: rgba(37, 99, 235, 0.1);
-    border-bottom: 1px solid rgba(37, 99, 235, 0.2);
-    padding: 6px 24px;
-    font-size: 0.78rem;
-    color: #93c5fd;
-    text-align: center;
-}
-
-/* Contenedor del Visor 3D */
-.canvas3d-wrapper {
-    position: relative;
-    width: 100%;
-    height: 260px;
-    background-color: #03050a;
-    border-bottom: 1px solid var(--border-color);
-}
-
-#canvas3d-container {
-    width: 100%;
-    height: 100%;
-}
-
-.canvas-overlay {
-    position: absolute;
-    top: 10px;
-    left: 15px;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.72rem;
-    color: #c4b5fd;
-    border: 1px solid rgba(139, 92, 246, 0.3);
-}
-
-.chat-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.message {
-    max-width: 80%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 0.92rem;
-    line-height: 1.5;
-}
-
-.user-message {
-    background-color: var(--primary);
-    color: white;
-    align-self: flex-end;
-    border-bottom-right-radius: 4px;
-}
-
-.assistant-message {
-    background-color: var(--bg-surface-hover);
-    color: var(--text-main);
-    align-self: flex-start;
-    border-bottom-left-radius: 4px;
-    border: 1px solid var(--border-color);
-}
-
-.assistant-message h3 {
-    color: #c4b5fd;
-    margin-bottom: 6px;
-}
-
-/* Input Area */
-.chat-input-wrapper {
-    padding: 16px 20px;
-    background-color: rgba(13, 19, 34, 0.98);
-    border-top: 1px solid var(--border-color);
-}
-
-.chat-input-container {
-    display: flex;
-    gap: 12px;
-    background-color: var(--bg-base);
-    border: 1px solid var(--border-color);
-    border-radius: 10px;
-    padding: 6px 8px 6px 14px;
-}
-
-.chat-input-container input {
-    flex: 1;
-    background: transparent;
-    border: none;
-    color: var(--text-main);
-    font-size: 0.9rem;
-    outline: none;
-}
-
-.send-btn {
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    padding: 8px 18px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
-.send-btn:hover {
-    background-color: var(--primary-hover);
-}
-
-@media (max-width: 768px) {
-    .app-layout {
-        flex-direction: column;
-        height: 100vh;
-        width: 100vw;
-        border-radius: 0;
+    // Bucle de animación (rota los objetos ligeramente para dar vida)
+    function animate() {
+        requestAnimationFrame(animate);
+        objetos3D.forEach((obj, index) => {
+            obj.rotation.y += 0.005 * (index % 2 === 0 ? 1 : -1);
+        });
+        renderer.render(scene, camera);
     }
-    .main-container {
-        flex-direction: column-reverse;
-    }
-    .sidebar {
-        width: 100%;
-        max-height: 180px;
-    }
-    .canvas3d-wrapper {
-        height: 180px;
+    animate();
+
+    // Adaptar tamaño si cambia la ventana
+    window.addEventListener('resize', () => {
+        camera.aspect = container.clientWidth / container.clientHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+}
+
+// Generar una entidad geométrica 3D física en la pantalla según el decreto
+function generarEntidad3D(tipo = 'default') {
+    let geometria, material;
+
+    // Crear distintas formas basadas en aleatoriedad o tipo
+    const formas = [
+        new THREE.BoxGeometry(1.5, 1.5, 1.5),
+        new THREE.SphereGeometry(1, 32, 32),
+        new THREE.ConeGeometry(1, 2, 32),
+        new THREE.CylinderGeometry(0.8, 0.8, 2, 32)
+    ];
+
+    geometria = formas[Math.floor(Math.random() * formas.length)];
+    
+    const colores = [0x8b5cf6, 0x2563eb, 0x059669, 0xdc2626, 0xf59e0b];
+    material = new THREE.MeshStandardMaterial({
+        color: colores[Math.floor(Math.random() * colores.length)],
+        roughness: 0.3,
+        metalness: 0.8
+    });
+
+    const mesh = new THREE.Mesh(geometria, material);
+
+    // Distribuir aleatoriamente en el espacio 3D
+    mesh.position.set(
+        (Math.random() - 0.5) * 8,
+        Math.random() * 2,
+        (Math.random() - 0.5) * 8
+    );
+
+    scene.add(mesh);
+    objetos3D.push(mesh);
+}
+
+// Sincronización del mundo cada 4 segundos
+setInterval(() => {
+    cargarMundoGlobal();
+}, 4000);
+
+async function enviarDecretoDivino() {
+    const textarea = document.getElementById('inputDios');
+    const decreto = textarea.value.trim();
+    const modelo = document.getElementById('modeloSelect').value;
+    if (decreto === "") return;
+
+    textarea.value = "";
+
+    // Generar un objeto 3D físico inmediato en pantalla
+    generarEntidad3D();
+
+    const promptDios = `[MODO DIOS 3D - ARQUITECTO SUPREMO]\nEl Creador ha ordenado físicamente: "${decreto}"\n\nInstrucciones:\n1. Describe cómo este decreto materializa estructuras físicas, energía o seres en el mundo 3D.\n2. Mantén la narrativa inmersiva de simulación activa.`;
+
+    try {
+        await fetch('/api/asistente', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mensaje: promptDios, modelo: modelo })
+        });
+        cargarMundoGlobal();
+    } catch (error) {
+        console.error("Error al enviar decreto 3D:", error);
     }
 }
+
+async function enviarAccionJugador() {
+    const input = document.getElementById('inputMensaje');
+    const accion = input.value.trim();
+    const modelo = document.getElementById('modeloSelect').value;
+    if (accion === "") return;
+
+    input.value = "";
+
+    const promptJugador = `[MUNDO 3D - ACCIÓN]\nEl viajero realiza: "${accion}"\n\nSimula la consecuencia física de esta acción en el entorno tridimensional.`;
+
+    try {
+        await fetch('/api/asistente', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mensaje: promptJugador, modelo: modelo })
+        });
+        cargarMundoGlobal();
+    } catch (error) {
+        console.error("Error al enviar acción:", error);
+    }
+}
+
+async function cargarMundoGlobal() {
+    try {
+        const respuesta = await fetch('/api/historial');
+        const datos = await respuesta.json();
+        
+        document.getElementById('contadorTotal').innerText = `Entidades en el mundo: ${datos.length + objetos3D.length}`;
+
+        const contenedorMensajes = document.getElementById('chatMensajes');
+        const estaAbajo = contenedorMensajes.scrollHeight - contenedorMensajes.scrollTop <= contenedorMensajes.clientHeight + 50;
+
+        contenedorMensajes.innerHTML = '';
+
+        if (datos.length === 0) {
+            contenedorMensajes.innerHTML = `
+                <div class="message assistant-message">
+                    <div class="message-body">
+                        <h3>El Vacío 3D</h3>
+                        <p>El espacio tridimensional está vació. Usa el <strong>Panel del Creador</strong> para emitir el primer decreto y ver cómo se materializan objetos físicos.</p>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        datos.forEach(item => {
+            let etiqueta = "Viajero";
+            let textoUsuario = item.usuario;
+
+            if (textoUsuario.includes("[MODO DIOS")) {
+                etiqueta = "⚡ Creador (Decreto 3D)";
+                textoUsuario = textoUsuario.replace('[MODO DIOS 3D - ARQUITECTO SUPREMO]\nEl Creador ha ordenado físicamente: "', '').replace('"\n\nInstrucciones:\n1. Describe cómo este...', '');
+            }
+
+            contenedorMensajes.innerHTML += `
+                <div class="message user-message">
+                    <p><strong>${etiqueta}:</strong> ${escapeHtml(textoUsuario)}</p>
+                </div>
+            `;
+            contenedorMensajes.innerHTML += `
+                <div class="message assistant-message">
+                    <div class="message-body">${marked.parse(item.respuesta)}</div>
+                </div>
+            `;
+        });
+
+        // Actualizar lista lateral
+        const historialContainer = document.getElementById('historial-container');
+        historialContainer.innerHTML = '';
+        datos.slice(-10).reverse().forEach(item => {
+            historialContainer.innerHTML += `
+                <div class="history-card">
+                    <p>${escapeHtml(item.usuario.substring(0, 35))}...</p>
+                    <small style="color: var(--text-muted);">${new Date(item.fecha).toLocaleTimeString()}</small>
+                </div>
+            `;
+        });
+
+        if (estaAbajo) {
+            contenedorMensajes.scrollTop = contenedorMensajes.scrollHeight;
+        }
+    } catch (error) {
+        console.error("Error al sincronizar:", error);
+    }
+}
+
+async function reiniciarUniverso() {
+    if (!confirm("¿Destruir el universo 3D actual?")) return;
+    try {
+        await fetch('/api/historial', { method: 'DELETE' });
+        // Limpiar objetos 3D de la escena
+        objetos3D.forEach(obj => scene.remove(obj));
+        objetos3D = [];
+        cargarMundoGlobal();
+    } catch (error) {
+        console.error("Error al reiniciar:", error);
+    }
+}
+
+function verificarEnter(event) {
+    if (event.key === 'Enter') {
+        enviarAccionJugador();
+    }
+}
+
+function escapeHtml(text) {
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+window.onload = () => {
+    inicializar3D();
+    cargarMundoGlobal();
+};
